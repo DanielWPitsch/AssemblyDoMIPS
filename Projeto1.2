@@ -1,0 +1,121 @@
+.data
+	objetivo:     .asciiz "				Jogo do imprensadinho\n 	[O computador gerou um numero qualquer de 1 a 100 e voce nao deve acerta-lo e sim imprensa-lo.]\n 		[Caso voce consiga imprensar o numero, voce ganha.] "
+	palpite:      .asciiz "\n\nQual eh seu palpite? "
+	Menor:        .asciiz "O numero estah entre "
+	menorMeio:    .asciiz " a "
+	acertou:      .asciiz "			Voce acertou o numero!"
+	Imprensou:    .asciiz "\n\n			Parabens, voce conseguiu imprensar o numero!"
+			
+			
+			#		Tabela de Símbolos
+			#
+			#	random			$t0			
+			#	palpite			$t1	
+			#	random -1		$s0
+			#	random +1		$s1
+			#	menor			$t3
+			#	maior			$t4
+			#
+			
+.text
+	li $t3, 0					# salvando menor em $t3
+	li $t4, 101					# salvando maior em $t4
+	
+	li $a1, 100					# rand()   {0...100}
+	li $v0, 42					
+	syscall						# gera random
+ 
+ 	move $t0, $a0					# movendo random para $t0
+	add $t0, $t0, 1					# random +1 (de 1 a 100)
+
+ 	move $s0, $t0
+ 	sub $s0, $s0, 1					# salva random -1
+ 	move $s1, $t0
+ 	add $s1, $s1, 1					# salva random +1
+ 
+	li $v0, 1 					# debug random
+	syscall 					
+	
+	la $a0, objetivo          		
+    	li $v0, 4   	     				# print string objetivo
+    	syscall
+ 
+loop:
+	la $a0, palpite          			# print	string palpite
+    	li $v0, 4   	     				
+    	syscall
+   
+   	li $v0, 5        				# lendo palpite
+    	syscall            				
+    
+    	move $t1, $v0					# movendo palpite para $t1
+    	
+    	blt $t1, $t0, menor				# testa se palpite é menor que random, se for pula para menor
+	bgt $t1, $t0, maior				# testa se palpite é maior que random, se for pula para maior
+	beq $t1, $t0, igual				# testa se palpite é igual que random, se for pula para igual
+
+menor: 
+	move $t3, $t1					# movendo palpite para ser o novo menor
+
+    	la $a0, Menor          				# print string menor
+    	li $v0, 4   	     				
+    	syscall  
+
+	move $a0, $t3					# print novo menor 
+	li $v0, 1        
+    	syscall  
+
+	la $a0, menorMeio          			
+    	li $v0, 4   	 				# print string menorMeio
+    	syscall      	
+  	
+  	move $a0, $t4
+	li $v0, 1        				# print maior
+    	syscall 
+    	
+    	beq $s0, $t3, imprensouMenor			# testa se o novo menor é igual ao random -1
+    	j	loop					# pule para loop
+    	
+maior:
+	move $t4, $t1					# movendo palpite para ser o novo maior
+ 
+    	la $a0, Menor          			
+    	li $v0, 4   	     				# print string menor
+    	syscall  
+	
+	move $a0, $t3
+	li $v0, 1        				# print novo menor
+    	syscall  
+
+	la $a0, menorMeio          			
+    	li $v0, 4   	     			  	# print string menorMeio
+    	syscall      
+
+	move $a0, $t4
+	li $v0, 1        				# print maior
+    	syscall 
+    	
+    	beq $s1, $t4, imprensouMaior			# testa se o novo maior é igual ao random +1
+    	j	loop 					# pule para o loop
+
+igual:
+	la $a0, acertou      			
+    	li $v0, 4   	     				# print string acertou
+    	syscall
+    	j	fim          				# pule para o fim
+
+imprensouMenor:
+	beq $s1, $t4, imprensou				# testa se o novo maior é igual ao random +1
+	j 	loop					# pule para o loop
+
+
+imprensouMaior:
+	beq $s0, $t3, imprensouMenor			# testa se o novo menor é igual ao random -1
+	j	loop
+
+imprensou:
+	la $a0, Imprensou          			
+    	li $v0, 4   	     				#print string Imprensou
+    	syscall
+
+fim:

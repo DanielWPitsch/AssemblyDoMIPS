@@ -1,0 +1,27 @@
+  	li $t1, 100
+    	li $t0, 1    				#atribuicao
+ 
+ 
+ laco:			# Get a Random #
+
+	.data
+	palavra:    .asciiz "n: "
+	.text 
+    	la $a0, palavra          			#copia...?
+    	li $v0, 4   	     			#print
+    	syscall
+
+    	
+	li $a1, 101		# rand() %4   {0...3}
+	li $v0, 42
+	syscall			# Get RNG
+		# $a0 = {0...3}
+ 
+	li $v0, 1 	# specify Print Integer service
+	syscall 	# print number (estah imprimindo $a0
+	
+    	add $t0, $t0, 1        			#soma
+    	ble $t0, $t1, laco       			#condicao branch less or equals
+
+ 
+	
